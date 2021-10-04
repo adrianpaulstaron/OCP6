@@ -28,8 +28,6 @@ exports.addsauce = (req, res, next) => {
     sauce.save()
      .then(() => res.status(201).json({ message: 'Sauce créée'}))
      .catch(error => res.status(400).json({error}));
-
-    // res.status(200).json("route post /sauces")
 };
 
 exports.getsauces = (req, res, next) => {
@@ -47,11 +45,19 @@ exports.getsauce = (req, res, next) => {
 };
 
 exports.updatesauce = (req, res, next) => {
-    const id = parseInt(req.params.id)
-    console.log("on put la sauce " + id)
-    console.log("le corps de la requête est " + req.body)
-    // let sauce = sauces.find(sauce => sauce.id === id)
-    res.status(200).json("route put /sauces/:id")
+    const sauceObject = req.file ?
+        { 
+            ...JSON.parse(req.body.sauce),
+            imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+        } : { ...req.body };
+    Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
+        .then(() => res.status(200).json({ message: 'Sauce modifiée'}))
+        .catch(error => res.status(400).json({error}));
+    // const id = parseInt(req.params.id)
+    // console.log("on put la sauce " + id)
+    // console.log("le corps de la requête est " + req.body)
+    // // let sauce = sauces.find(sauce => sauce.id === id)
+    // res.status(200).json("route put /sauces/:id")
 }
 
 exports.deletesauce = (req, res, next) => {
