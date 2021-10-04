@@ -1,6 +1,6 @@
 const Sauce = require('../models/Sauce');
 const jwt = require('jsonwebtoken');
-
+const fs = require('fs');
 
 exports.addsauce = (req, res, next) => {
     const sauceObject = JSON.parse(req.body.sauce)
@@ -53,17 +53,19 @@ exports.updatesauce = (req, res, next) => {
     Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
         .then(() => res.status(200).json({ message: 'Sauce modifiée'}))
         .catch(error => res.status(400).json({error}));
-    // const id = parseInt(req.params.id)
-    // console.log("on put la sauce " + id)
-    // console.log("le corps de la requête est " + req.body)
-    // // let sauce = sauces.find(sauce => sauce.id === id)
-    // res.status(200).json("route put /sauces/:id")
 }
 
 exports.deletesauce = (req, res, next) => {
-    const id = parseInt(req.params.id)
-    console.log("j'efface la sauce " + id)
-    res.status(200).json("route delete " + id)
+    Sauce.findOne( { _id: req.params.id})
+    .then(sauce => { 
+        const filename = sauce.imageUrl.split('/images/')[1];
+        fs.unlink(`images/${filename}`, () => {
+            Sauce.deleteOne({ _id: req.params.id })
+            .then(() => res.status(200).json({ message: 'Sauce supprimée'}))
+            .catch(error => res.status(400).json({ error }))
+        })
+    })
+    .catch(error => res.status(500).json({ error }));
 }
 
 exports.likesauce = (req, res, next) => {
