@@ -31,6 +31,9 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/api/sauces', saucesRoutes)
 app.use('/api/auth', userRoutes)
 
+
 app.listen(3000, () => {
     console.log("Serveur à l'écoute")
 })
+// .then(() => res.status(200).json({ message: 'connexion au serveur réussie'}))
+// .catch(error => res.status(400).json({error}));
