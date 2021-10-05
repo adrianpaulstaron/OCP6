@@ -1,5 +1,3 @@
-// connexion bdd avec then catch pour signaler les erreurs ou le succès
-// headers de toutes les requêtes
 // app.js > gère les routes de base
 // server.js > lance le serveur
 
@@ -16,7 +14,6 @@ app.use(cors({
     origin: 'http://localhost:8081'
 }));
 
-
 // Middleware
 app.use(express.json())
 
@@ -32,8 +29,10 @@ app.use('/api/sauces', saucesRoutes)
 app.use('/api/auth', userRoutes)
 
 
-app.listen(3000, () => {
+try {
+  app.listen(3000, () => {
     console.log("Serveur à l'écoute")
-})
-// .then(() => res.status(200).json({ message: 'connexion au serveur réussie'}))
-// .catch(error => res.status(400).json({error}));
+  })
+} catch (error) {
+  console.error(error);
+}

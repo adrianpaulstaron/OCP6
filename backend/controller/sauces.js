@@ -1,5 +1,4 @@
 const Sauce = require('../models/Sauce');
-const jwt = require('jsonwebtoken');
 const fs = require('fs');
 
 exports.addsauce = (req, res, next) => {

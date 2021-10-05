@@ -34,7 +34,7 @@ exports.login = (req, res, next) => {
                 return res.status(401).json({ error: 'Mot de passe erroné'});
             }
             res.status(200).json({
-                // si le mot de passe est bon, on envoie un token d'identification au client grâce à jsonwebtoken
+                // si le mot de passe est bon, on envoie un token d'identification au client grâce à jsonwebtoken, dans lequel on met l'user id
                 userId: user._id,
                 token: jwt.sign(
                     // le token contient l'user id, la clef (chaîne de caractères), et la durée avant expiration du token
