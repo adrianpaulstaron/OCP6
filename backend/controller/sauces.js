@@ -86,20 +86,17 @@ exports.likesauce = (req, res, next) => {
         let isMyUser = (element) => element == req.body.userId
         // on switche sur la valeur de like
         switch (req.body.like){
-            case -1:
-                // Contrairement aux likes, l'application n'affiche pas le bouton dislike en rouge lorsque l'utilisateur a disliké précédemment la sauce.
-                // Or, pour passer dans le case 0 (=> sauce ni likée ni dislikée), on a besoin d'avoir cet état afin de supprimer notre dislike. On ne peut donc pas supprimer un dislike si on a disliké puis quitté la page.
-                // Pour limiter la casse, on va faire en sorte d'empecher l'utilisateur de disliker deux fois la même sauce.
-                let indexToMatchInDislikes = sauce.usersDisliked.findIndex(isMyUser)
-                if(indexToMatchInDislikes == -1){
-                    sauce.usersDisliked.push(req.body.userId)
-                    sauce.dislikes++
-                }
+            case 1:
+                // on push dans le tableau de notre variable l'userId que l'ont récupère dans le corps de notre requête
+                sauce.usersLiked.push(req.body.userId)
+                // on incrémente le nombre de likes de la sauce
+                sauce.likes++
+                // on met les valeurs modifiées en bdd
                 Sauce.updateOne({ _id: req.params.id }, { 
-                    dislikes: sauce.dislikes,
-                    usersDisliked: sauce.usersDisliked
+                    likes: sauce.likes,
+                    usersLiked: sauce.usersLiked,
                 })
-                .then(() => res.status(200).json({ message: 'Sauce dislikée'}))
+                .then(() => res.status(200).json({ message: 'Sauce likée'}))
                 .catch(error => res.status(400).json({error}));
                 break; 
             case 0:
@@ -107,15 +104,16 @@ exports.likesauce = (req, res, next) => {
                 let indexToSpliceInLikes = sauce.usersLiked.findIndex(isMyUser)
                 // si jamais il est trouvé, on le splice et on décrémente le nombre de likes
                 if(indexToSpliceInLikes != -1){
-                    console.log("je suis dans la condition où j'ai trouvé dans les likes")
                     sauce.usersLiked.splice(indexToSpliceInLikes, 1)
                     sauce.likes--
                 }
+                // même logique pour les dislikes
                 let indexToSpliceInDislikes = sauce.usersDisliked.findIndex(isMyUser)
                 if(indexToSpliceInDislikes != -1){
                     sauce.usersDisliked.splice(indexToSpliceInDislikes, 1)
                     sauce.dislikes--
                 }
+                // on update notre sauce en base
                 Sauce.updateOne({ _id: req.params.id }, { 
                     likes: sauce.likes,
                     dislikes: sauce.dislikes,
@@ -125,29 +123,15 @@ exports.likesauce = (req, res, next) => {
                 .then(() => res.status(200).json({ message: 'Sauce dé-likée'}))
                 .catch(error => res.status(400).json({error}));
                 break;
-            case 1:
-                // on push dans le tableau de notre variable l'userId que l'ont récupère dans le corps de notre requête
-                sauce.usersLiked.push(req.body.userId)
-                // on incrémente le nombre de likes de la sauce
-                sauce.likes++
-
-                // Comme expliqué précédemment, l'application n'affiche pas le bouton dislike en rouge lorsque l'utilisateur a disliké précédemment la sauce.
-                // Cela suppose qu'une sauce pourrait être dans un état où elle est simultanément likée et dislikée par un même utilisateur, ce qui n'a pas de sens.
-                // On va donc faire en sorte qu'un like annule un dislike.
-                let indexToMatchInDislikes2 = sauce.usersDisliked.findIndex(isMyUser)
-                if(indexToMatchInDislikes2 != -1){
-                    sauce.usersDisliked.splice(indexToMatchInDislikes2, 1)
-                    sauce.dislikes--
-                }
-                // on met les valeurs modifiées en bdd
-                Sauce.updateOne({ _id: req.params.id }, { 
-                    likes: sauce.likes,
-                    dislikes: sauce.dislikes,
-                    usersLiked: sauce.usersLiked,
-                    usersDisliked: sauce.usersDisliked
-                })
-                .then(() => res.status(200).json({ message: 'Sauce likée'}))
-                .catch(error => res.status(400).json({error}));
+            case -1:
+            sauce.usersDisliked.push(req.body.userId)
+            sauce.dislikes++
+            Sauce.updateOne({ _id: req.params.id }, { 
+                dislikes: sauce.dislikes,
+                usersDisliked: sauce.usersDisliked
+            })
+            .then(() => res.status(200).json({ message: 'Sauce dislikée'}))
+            .catch(error => res.status(400).json({error}));
                 break; 
 
         }

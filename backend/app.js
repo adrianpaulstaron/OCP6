@@ -6,7 +6,8 @@ const path = require ('path');
 const saucesRoutes = require('./routes/sauces')
 const userRoutes = require('./routes/user')
 
-// on gère le problème de cors (le front et le back tournent sur la même machine)
+// le front et le back tournent sur la même machine, on avait donc une erreur car il s'agit d'une violation des règles de sécurité de cors
+// on autorise donc l'url sur laquelle on fait tourner le front, pour le développement
 const cors = require('cors');
 app.use(cors({
     origin: 'http://localhost:8081'
