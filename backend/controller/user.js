@@ -2,21 +2,37 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-exports.signup = (req, res, next) => {
-    // lors d'une inscription, on commence par hacher le password envoyé dans le corps de la requête par le front, à l'aide de bcrypt
-    bcrypt.hash(req.body.password, 10)
-    .then(hash => {
-        // on crée un nouvel User à partir de notre modèle, avec en email l'email envoyé dans le corps de la requête, et en password notre password haché
-        const user = new User({
-            email: req.body.email,
-            password: hash
-        });
-        // on sauvegarde cet utilisateur en base
-        user.save()
-         .then(() => res.status(201).json({ message: 'Utilisateur créé'}))
-         .catch(error => res.status(400).json({error}));
-    })
-    .catch(error => res.status(500).json({error}));
+exports.signup = async (req, res, next) => {
+    // // avant le signup, on regarde si l'utilisateur déjà en base ou non
+    const userExists = await User.exists({ mail: req.body.email });
+    if(!userExists){
+        // avant le signup, on pose une condition sur le mdp
+        // on déclare une const qui contient notre expression régulière. Celle-ci teste qu'on a un mdp d'au moins 8 caractères, avec au moins une lettre et un chiffre
+        const pwdRegex = new RegExp(`^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$`)
+        // si le password est mauvais, on envoie directement une réponse
+        if(pwdRegex.test(req.body.password)){
+            console.log("on est dans la condition, mot de passe entré: " + req.body.password)
+            // on hache le password envoyé dans le corps de la requête par le front, à l'aide de bcrypt
+            bcrypt.hash(req.body.password, 10)
+            .then(hash => {
+                // on crée un nouvel User à partir de notre modèle, avec en email l'email envoyé dans le corps de la requête, et en password notre password haché
+                const user = new User({
+                    email: req.body.email,
+                    password: hash
+                });
+                // on sauvegarde cet utilisateur en base
+                user.save()
+                .then(() => res.status(201).json({ message: 'Utilisateur créé'}))
+                .catch(error => res.status(400).json({error})); 
+            })
+            .catch(error => res.status(500).json({error}));
+        }else{
+            res.status(400).json({ message: 'le mot de passe doit faire minimum 8 caractères et contenir au moins une lettre et un chiffre'})
+        }
+    }else{
+        console.log("J'existe.")
+        res.status(400).json({ message: 'Cet email est déjà utilisé'})
+    }
 };
 exports.login = (req, res, next) => {
     // pour le login, on va chercher l'user à partir de l'email envoyé dans le corps de la requête
@@ -39,7 +55,7 @@ exports.login = (req, res, next) => {
                 token: jwt.sign(
                     // le token contient l'user id, la clef (chaîne de caractères), et la durée avant expiration du token
                     { userId: user._id },
-                    'RANDOM_TOKEN_SECRET',
+                    process.env.CRYPT_KEY,
                     { expiresIn: '24h'}
                 )
             });
