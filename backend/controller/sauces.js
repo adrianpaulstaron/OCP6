@@ -55,10 +55,30 @@ exports.updatesauce = (req, res, next) => {
             imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
         // s'il n'y a pas de file, on ne prend que le corps de la requête pour mettre à jour la sauce
         } : { ...req.body };
+    // si on a une nouvelle image, on veut supprimer l'ancienne image
+    // on vérifie donc si on a un fichier
+    if(req.file){
+        console.log("on a un file")
+        // si on a un fichier, on récupère la sauce en bdd
+        Sauce.findOne({ _id: req.params.id }).then(sauce => {
+            // on récupère l'url de l'image dans notre sauce récupérée en bdd, qu'on split sur le dossier images afin d'obtenir son nom de
+            const filename = sauce.imageUrl.split('/images/')[1];
+            console.log("nom de la sauce => " + filename)
+            // on supprime le fichier 
+            fs.unlink(`images/${filename}`, () => {
+                // on pointe vers la bonne sauce en bdd, puis on la met à jour avec la sauce de la requête. on le fait avec un spread operator (qui copie les champs qu'il y a dans SauceObject)
+                Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
+                .then(() => res.status(200).json({ message: 'Sauce modifiée'}))
+                .catch(error => res.status(400).json({error}));
+            })
+        })
+    }else{
         // on pointe vers la bonne sauce en bdd, puis on la met à jour avec la sauce de la requête. on le fait avec un spread operator (qui copie les champs qu'il y a dans SauceObject)
-    Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
+        Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
         .then(() => res.status(200).json({ message: 'Sauce modifiée'}))
         .catch(error => res.status(400).json({error}));
+    }
+       
 }
 
 exports.deletesauce = (req, res, next) => {
@@ -78,7 +98,6 @@ exports.deletesauce = (req, res, next) => {
 }
 
 exports.likesauce = (req, res, next) => {
-    console.log(req.params.id)
     Sauce.findOne({ _id: req.params.id })
     // on attend d'avoir trouvé la sauce
     .then(sauce => {
