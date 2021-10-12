@@ -29,8 +29,10 @@ exports.addsauce = (req, res, next) => {
     });
     // on sauvegarde cette sauce
     sauce.save()
-     .then(() => res.status(201).json({ message: 'Sauce créée'}))
-     .catch(error => res.status(400).json({error}));
+    .then(() => res.status(201).json({ message: 'Sauce créée'}))
+    .catch(error => {
+        res.status(400).json({ message: 'champs non conformes'})
+    })
 };
 
 exports.getsauces = (req, res, next) => {

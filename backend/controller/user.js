@@ -9,10 +9,11 @@ exports.signup = async (req, res, next) => {
         // avant le signup, on pose une condition sur le mdp
         // on déclare une const qui contient notre expression régulière. Celle-ci teste qu'on a un mdp d'au moins 8 caractères, avec au moins une lettre et un chiffre
         const pwdRegex = new RegExp(`^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$`)
+        const mailRegex = new RegExp(`^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$`)
         // si le password est mauvais, on envoie directement une réponse
         if(pwdRegex.test(req.body.password)){
-            console.log("on est dans la condition, mot de passe entré: " + req.body.password)
-            // on hache le password envoyé dans le corps de la requête par le front, à l'aide de bcrypt
+            if(mailRegex.test(req.body.email)){
+                // on hache le password envoyé dans le corps de la requête par le front, à l'aide de bcrypt
             bcrypt.hash(req.body.password, 10)
             .then(hash => {
                 // on crée un nouvel User à partir de notre modèle, avec en email l'email envoyé dans le corps de la requête, et en password notre password haché
@@ -26,12 +27,15 @@ exports.signup = async (req, res, next) => {
                 .catch(error => res.status(400).json({error})); 
             })
             .catch(error => res.status(500).json({error}));
+            }else{
+                res.status(400).json({ message: 'veuillez entrer une adresse email correcte'})
+            }
+            
         }else{
             res.status(400).json({ message: 'le mot de passe doit faire minimum 8 caractères et contenir au moins une lettre et un chiffre'})
         }
     }else{
-        console.log("J'existe.")
-        res.status(400).json({ message: 'Cet email est déjà utilisé'})
+        res.status(400).json({ message: 'cet email est déjà utilisé'})
     }
 };
 exports.login = (req, res, next) => {
