@@ -1,7 +1,6 @@
 const mongoose = require ('mongoose');
 const sauceValidator = require('../middleware/sauceValidation')
 
-
 // on déclare un schéma pour les sauces
 const sauceSchema = new mongoose.Schema({
     userId: { type: String, required: true },

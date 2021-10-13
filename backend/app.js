@@ -7,7 +7,19 @@ const saucesRoutes = require('./routes/sauces')
 const userRoutes = require('./routes/user')
 const helmet = require("helmet");
 
+// helmet est un package aidant à la sécurisation de notre appli
 app.use(helmet());
+// app.use(helmet.contentSecurityPolicy());
+// app.use(helmet.dnsPrefetchControl());
+// app.use(helmet.expectCt());
+// app.use(helmet.frameguard());
+// app.use(helmet.hidePoweredBy());
+// app.use(helmet.hsts());
+// app.use(helmet.ieNoOpen());
+// app.use(helmet.noSniff());
+// app.use(helmet.permittedCrossDomainPolicies());
+// app.use(helmet.referrerPolicy());
+// app.use(helmet.xssFilter());
 
 
 // le front et le back tournent sur la même machine, on avait donc une erreur car il s'agit d'une violation des règles de sécurité de cors
@@ -18,13 +30,13 @@ app.use(cors({
 }));
 
 var RateLimit = require('express-rate-limit');
-app.enable('trust proxy'); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS if you use an ELB, custom Nginx setup, etc) 
+// app.enable('trust proxy'); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS if you use an ELB, custom Nginx setup, etc) 
 var limiter = new RateLimit({
   windowMs: 15*60*1000, // 15 minutes 
-  max: 50, // limit each IP to 100 requests per windowMs 
-  delayMs: 0 // disable delaying - full speed until the max limit is reached 
+  max: 200, // limiter chaque IP à 100 requêtes par le paramètre d'au-dessus 
+  delayMs: 0 // pas de delaying
 });
-//  apply to all requests 
+//  appliquer à toutes les requêtes 
 app.use(limiter);
 
 // Middleware

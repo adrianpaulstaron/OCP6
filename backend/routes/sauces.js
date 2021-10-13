@@ -8,6 +8,7 @@ const sanitizer = require('../middleware/sanitizer')
 
 // on ajoute notre middleware d'authentification sur chaque route afin de la sécuriser
 // la route d'ajout de sauce se voit ajouté un middleware en plus, qui sert à gérer les fichiers (l'utilisateur téléverse une image de sauce lors de sa création)
+// on ajoute également un sanitizer sur toutes nos routes qui écrivent
 router.post('/', auth, sanitizer, multer, saucesCtrl.addsauce)
 router.get('/', auth, saucesCtrl.getsauces)
 router.get('/:id', auth, saucesCtrl.getsauce)
